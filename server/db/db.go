@@ -1,18 +1,17 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
 	"strings"
 	"time"
 
-	_ "github.com/lib/pq"
-
 	"github.com/spf13/viper"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 type Database struct {
-	db *sql.DB
+	db *gorm.DB
 }
 
 func NewDatabase() (*Database, error) {
@@ -21,14 +20,9 @@ func NewDatabase() (*Database, error) {
 
 	db := initDatabase()
 
-	return &Database{db: db}, nil
-}
+	AutoMigration(db)
 
-func (d *Database) Close() {
-	d.db.Close()
-}
-func (d *Database) GetDB() *sql.DB {
-	return d.db
+	return &Database{db: db}, nil
 }
 
 func initConfig() {
@@ -55,24 +49,21 @@ func initTimeZome() {
 
 }
 
-func initDatabase() *sql.DB {
-	dsn := fmt.Sprintf("postgresql://%v:%v@%v:%v/%v?sslmode=disable",
+func initDatabase() *gorm.DB {
+	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=disable TimeZone=Asia/Bangkok",
+		viper.GetString("db.host"),
 		viper.GetString("db.username"),
 		viper.GetString("db.password"),
-		viper.GetString("db.host"),
-		viper.GetString("db.port_host"),
 		viper.GetString("db.database"),
+		viper.GetString("db.port_host"),
 	)
 
-	db, err := sql.Open(viper.GetString("db.driver"), dsn)
+	dial := postgres.Open(dsn)
+	db, err := gorm.Open(dial, &gorm.Config{})
 
 	if err != nil {
 		panic(err)
 	}
-
-	db.SetConnMaxLifetime(3 * time.Minute)
-	db.SetMaxOpenConns(5)
-	db.SetMaxIdleConns(5)
 
 	return db
 
