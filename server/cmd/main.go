@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"server/db"
+	"realtime_chat_server/db"
 )
 
 func main() {
