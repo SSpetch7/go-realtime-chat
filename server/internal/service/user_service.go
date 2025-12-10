@@ -4,6 +4,8 @@ import (
 	"context"
 	m "realtime_chat_server/internal/model"
 	"realtime_chat_server/internal/repository"
+	"realtime_chat_server/util"
+	"strconv"
 	"time"
 )
 
@@ -21,9 +23,11 @@ func (s userService) Register(c context.Context, req *m.RegisterReq) (*m.Registe
 
 	defer cancel()
 
-	hashedPassword := ""
+	hashedPassword, err := util.HashPassword(req.Password)
 
-	// hashpassword
+	if err != nil {
+		return nil, err
+	}
 
 	newUser := &m.User{
 		Username: req.Username,
@@ -37,7 +41,7 @@ func (s userService) Register(c context.Context, req *m.RegisterReq) (*m.Registe
 	}
 
 	user := m.RegisterRes{
-		ID:       res.ID,
+		ID:       strconv.Itoa(int(res.ID)),
 		Username: res.Username,
 		Email:    res.Email,
 	}
