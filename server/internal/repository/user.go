@@ -1,11 +1,12 @@
 package repository
 
 import (
+	"context"
 	m "realtime_chat_server/internal/model"
 )
 
 type UserRepository interface {
-	CreateUser(user *m.User) (*m.User, error)
+	CreateUser(ctx context.Context, user *m.User) (*m.User, error)
 	GetUsers() (*[]m.User, error)
-	GetUserByID(id int64) (*m.User, error)
+	GetUserByUsername(username string) (*m.User, error)
 }

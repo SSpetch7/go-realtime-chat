@@ -20,11 +20,11 @@ func (h userHandler) Register(c *fiber.Ctx) error {
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
 	}
-	users, err := h.userSrv.Register(c.Context(), body)
+	user, err := h.userSrv.Register(c.Context(), body)
 
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err})
 	}
 
-	return handleSuccess(c, users)
+	return handleSuccess(c, user)
 }

@@ -2,20 +2,25 @@ package service
 
 import (
 	"context"
-	"fmt"
 	m "realtime_chat_server/internal/model"
 	"realtime_chat_server/internal/repository"
+	"time"
 )
 
 type userService struct {
 	userRepo repository.UserRepository
+	timeout  time.Duration
 }
 
 func NewUserService(userRepo repository.UserRepository) *userService {
-	return &userService{userRepo}
+	return &userService{userRepo, time.Duration(2) * time.Second}
 }
 
-func (s userService) Register(ctx context.Context, req *m.RegisterReq) (*m.User, error) {
+func (s userService) Register(c context.Context, req *m.RegisterReq) (*m.RegisterRes, error) {
+	ctx, cancel := context.WithTimeout(c, s.timeout)
+
+	defer cancel()
+
 	hashedPassword := ""
 
 	// hashpassword
@@ -26,11 +31,16 @@ func (s userService) Register(ctx context.Context, req *m.RegisterReq) (*m.User,
 		Password: hashedPassword,
 	}
 
-	fmt.Println("check setup newUser : ", newUser)
-
-	user, err := s.userRepo.CreateUser(newUser)
+	res, err := s.userRepo.CreateUser(ctx, newUser)
 	if err != nil {
 		return nil, err
 	}
-	return user, nil
+
+	user := m.RegisterRes{
+		ID:       res.ID,
+		Username: res.Username,
+		Email:    res.Email,
+	}
+
+	return &user, nil
 }
