@@ -6,5 +6,5 @@ import (
 )
 
 type UserService interface {
-	Register(ctx context.Context, newUser *m.User) (*m.User, error)
+	Register(ctx context.Context, newUser *m.RegisterReq) (*m.User, error)
 }

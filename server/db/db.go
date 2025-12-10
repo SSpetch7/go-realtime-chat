@@ -14,7 +14,7 @@ type Database struct {
 	db *gorm.DB
 }
 
-func NewDatabase() (*Database, error) {
+func NewDatabase() *gorm.DB {
 	initTimeZome()
 	initConfig()
 
@@ -22,7 +22,7 @@ func NewDatabase() (*Database, error) {
 
 	AutoMigration(db)
 
-	return &Database{db: db}, nil
+	return db
 }
 
 func initConfig() {
