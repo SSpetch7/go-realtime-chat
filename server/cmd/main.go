@@ -34,13 +34,9 @@ func main() {
 
 	app.Post("/ws/createRoom", wsHandler.CreateRoom)
 
-	app.Use("/ws", func(c *fiber.Ctx) error {
-		if ws.IsWebSocketUpgrade(c) {
-			return c.Next()
-		}
-		return fiber.ErrUpgradeRequired
-	})
 	app.Get("/ws/joinRoom/:roomId", ws.New(wsHandler.JoinRoom))
+	app.Get("ws/getRooms", wsHandler.GetRoom)
+	app.Get("ws/getClients/:roomId", wsHandler.GetClient)
 
 	app.Listen(fmt.Sprintf(":%v", viper.GetInt("app.port")))
 

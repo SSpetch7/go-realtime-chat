@@ -62,11 +62,55 @@ func (h *wsHandler) JoinRoom(conn *websocket.Conn) {
 	// register new client throught register channel
 	h.hub.Register <- cl
 	// bradcast msg
-	h.hub.Broadcase <- m
+	h.hub.Broadcast <- m
 
 	// writeMsg
 	go cl.WriteMsg()
 	// readMsg
 	cl.ReadMsg(h.hub)
+
+}
+
+type RoomRes struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+func (h *wsHandler) GetRoom(c *fiber.Ctx) error {
+	rooms := make([]RoomRes, 0)
+
+	for _, r := range h.hub.Rooms {
+		rooms = append(rooms, RoomRes{
+			ID:   r.ID,
+			Name: r.Name,
+		})
+	}
+
+	return handleSuccess(c, rooms)
+
+}
+
+type ClientRes struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+}
+
+func (h *wsHandler) GetClient(c *fiber.Ctx) error {
+	clients := make([]ClientRes, 0)
+
+	roomId := c.Params("roomId")
+
+	if _, ok := h.hub.Rooms[roomId]; !ok {
+		return handleSuccess(c, clients)
+	}
+
+	for _, c := range h.hub.Rooms[roomId].Clients {
+		clients = append(clients, ClientRes{
+			ID:       c.ID,
+			Username: c.Username,
+		})
+	}
+
+	return handleSuccess(c, clients)
 
 }

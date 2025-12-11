@@ -10,7 +10,7 @@ type Hub struct {
 	Rooms      map[string]*Room
 	Register   chan *Client
 	Unregister chan *Client
-	Broadcase  chan *Message
+	Broadcast  chan *Message
 }
 
 func NewHub() *Hub {
@@ -18,7 +18,7 @@ func NewHub() *Hub {
 		Rooms:      make(map[string]*Room),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
-		Broadcase:  make(chan *Message, 5),
+		Broadcast:  make(chan *Message, 5),
 	}
 }
 
@@ -37,7 +37,7 @@ func (h *Hub) Run() {
 				if _, ok := h.Rooms[cl.RoomID].Clients[cl.ID]; ok {
 
 					if len(h.Rooms[cl.RoomID].Clients) != 0 {
-						h.Broadcase <- &Message{
+						h.Broadcast <- &Message{
 							Content:  "user left the chat",
 							RoomID:   cl.RoomID,
 							Username: cl.Username,
@@ -48,7 +48,7 @@ func (h *Hub) Run() {
 					close(cl.Message)
 				}
 			}
-		case m := <-h.Broadcase:
+		case m := <-h.Broadcast:
 			if _, ok := h.Rooms[m.RoomID]; ok {
 				for _, cl := range h.Rooms[m.RoomID].Clients {
 					cl.Message <- m
