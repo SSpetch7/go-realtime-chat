@@ -67,6 +67,6 @@ func (h *wsHandler) JoinRoom(conn *websocket.Conn) {
 	// writeMsg
 	go cl.WriteMsg()
 	// readMsg
-	go cl.ReadMsg(h.hub)
+	cl.ReadMsg(h.hub)
 
 }
