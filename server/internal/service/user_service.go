@@ -2,11 +2,15 @@ package service
 
 import (
 	"context"
+	"fmt"
 	m "realtime_chat_server/internal/model"
 	"realtime_chat_server/internal/repository"
 	"realtime_chat_server/util"
 	"strconv"
 	"time"
+
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/spf13/viper"
 )
 
 type userService struct {
@@ -47,4 +51,54 @@ func (s userService) Register(c context.Context, req *m.RegisterReq) (*m.Registe
 	}
 
 	return &user, nil
+}
+
+type JWTClaims struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+	jwt.RegisteredClaims
+}
+
+func (s userService) Login(c context.Context, req *m.LoginReq) (*m.LoginRes, error) {
+	ctx, cancel := context.WithTimeout(c, s.timeout)
+
+	defer cancel()
+
+	u, err := s.userRepo.GetUserByEmail(ctx, req.Email)
+	if err != nil {
+		return &m.LoginRes{}, nil
+	}
+
+	err = util.VerifyPassword(req.Password, u.Password)
+
+	if err != nil {
+		fmt.Println("hash error : ", err)
+		return &m.LoginRes{}, err
+	}
+
+	jwtSecretKey := viper.GetString("env.jwtSecretKey")
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, JWTClaims{
+		ID:       strconv.Itoa(int(u.ID)),
+		Username: u.Username,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer:    strconv.Itoa(int(u.ID)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(8 * time.Hour)),
+		},
+	})
+
+	accessToken, err := token.SignedString([]byte(jwtSecretKey))
+
+	if err != nil {
+		return &m.LoginRes{}, err
+	}
+
+	res := &m.LoginRes{
+		AccessToken: accessToken,
+		ID:          strconv.Itoa(int(u.ID)),
+		Username:    u.Username,
+	}
+
+	return res, nil
+
 }

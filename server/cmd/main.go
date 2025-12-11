@@ -23,6 +23,7 @@ func main() {
 	app := fiber.New()
 
 	app.Post("/register", userHandler.Register)
+	app.Post("/login", userHandler.Login)
 
 	app.Listen(fmt.Sprintf(":%v", viper.GetInt("app.port")))
 

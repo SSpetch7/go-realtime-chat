@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	m "realtime_chat_server/internal/model"
 	"realtime_chat_server/internal/service"
 
@@ -27,4 +28,23 @@ func (h userHandler) Register(c *fiber.Ctx) error {
 	}
 
 	return handleSuccess(c, user)
+}
+
+func (h userHandler) Login(c *fiber.Ctx) error {
+
+	body := new(m.LoginReq)
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot parse JSON"})
+	}
+
+	res, err := h.userSrv.Login(c.Context(), body)
+
+	fmt.Println("handler error : ", err)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err})
+	}
+
+	return handleSuccess(c, res)
+
 }

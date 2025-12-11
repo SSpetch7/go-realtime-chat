@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"fmt"
 	"log"
 	m "realtime_chat_server/internal/model"
 
@@ -33,11 +34,23 @@ func (r userRepositoryDB) CreateUser(ctx context.Context, user *m.User) (*m.User
 func (r userRepositoryDB) GetUsers() (users *[]m.User, err error) {
 	return nil, nil
 }
+
 func (r userRepositoryDB) GetUserByUsername(username string) (user *m.User, err error) {
 	result := r.db.Where("username = ?", username).First(&user)
 
 	if result.Error != nil {
 		log.Fatalf("Error get user : %v", result.Error)
+	}
+
+	return user, nil
+}
+
+func (r userRepositoryDB) GetUserByEmail(ctx context.Context, email string) (user *m.User, err error) {
+	result := r.db.Where("email = ?", email).First(&user)
+
+	if result.Error != nil {
+		fmt.Println("repo error : ", err)
+		return user, nil
 	}
 
 	return user, nil
