@@ -8,6 +8,8 @@ import (
 	"realtime_chat_server/internal/service"
 	"realtime_chat_server/internal/websocket"
 
+	ws "github.com/gofiber/websocket/v2"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/spf13/viper"
 )
@@ -20,7 +22,9 @@ func main() {
 	userHandler := handler.NewUserHandler(userServer)
 
 	hub := websocket.NewHub()
-	wsHandler := handler.NewRoomHandler(hub)
+	wsHandler := handler.NewWSHandler(hub)
+
+	go hub.Run()
 
 	app := fiber.New()
 
@@ -29,6 +33,14 @@ func main() {
 	app.Get("/logout", userHandler.Logout)
 
 	app.Post("/ws/createRoom", wsHandler.CreateRoom)
+
+	app.Use("/ws", func(c *fiber.Ctx) error {
+		if ws.IsWebSocketUpgrade(c) {
+			return c.Next()
+		}
+		return fiber.ErrUpgradeRequired
+	})
+	app.Get("/ws/joinRoom/:roomId", ws.New(wsHandler.JoinRoom))
 
 	app.Listen(fmt.Sprintf(":%v", viper.GetInt("app.port")))
 
