@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"log"
 	m "realtime_chat_server/internal/model"
 
@@ -49,8 +48,7 @@ func (r userRepositoryDB) GetUserByEmail(ctx context.Context, email string) (use
 	result := r.db.Where("email = ?", email).First(&user)
 
 	if result.Error != nil {
-		fmt.Println("repo error : ", err)
-		return user, nil
+		return nil, result.Error
 	}
 
 	return user, nil

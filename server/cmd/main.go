@@ -24,6 +24,7 @@ func main() {
 
 	app.Post("/register", userHandler.Register)
 	app.Post("/login", userHandler.Login)
+	app.Get("/logout", userHandler.Logout)
 
 	app.Listen(fmt.Sprintf(":%v", viper.GetInt("app.port")))
 

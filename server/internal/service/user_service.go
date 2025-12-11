@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	m "realtime_chat_server/internal/model"
 	"realtime_chat_server/internal/repository"
 	"realtime_chat_server/util"
@@ -65,14 +64,14 @@ func (s userService) Login(c context.Context, req *m.LoginReq) (*m.LoginRes, err
 	defer cancel()
 
 	u, err := s.userRepo.GetUserByEmail(ctx, req.Email)
+
 	if err != nil {
-		return &m.LoginRes{}, nil
+		return &m.LoginRes{}, err
 	}
 
 	err = util.VerifyPassword(req.Password, u.Password)
 
 	if err != nil {
-		fmt.Println("hash error : ", err)
 		return &m.LoginRes{}, err
 	}
 
